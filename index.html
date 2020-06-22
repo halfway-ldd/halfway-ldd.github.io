@@ -64,6 +64,84 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-cpp学习日记-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/06/22/cpp%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0-1/" class="article-date">
+  <time datetime="2020-06-22T11:27:27.000Z" itemprop="datePublished">2020-06-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/06/22/cpp%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0-1/">cpp学习日记</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <hr>
+<h1 id="c-中的函数"><a href="#c-中的函数" class="headerlink" title="c++中的函数"></a>c++中的函数</h1><h2 id="内联函数"><a href="#内联函数" class="headerlink" title="内联函数"></a>内联函数</h2><p>在函数的声明和定义前都要加 inline 关键字。<br>当内联函数过大或者递归时，编译器会报错。<br>` <strong>内联函数和宏</strong><br>下面有两行代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#define SQUARE(X) X*X</span><br><span class="line"></span><br><span class="line">inline double square(double) &#123;return x*x&#125;;</span><br></pre></td></tr></table></figure>
+<p>第一行是c语言中的做法，是通过文本替换而不是值传递的方式实现的。<br>而内联函数则与函数一样，通过值传递实现。<br>在面临如<code>b=square(4.5+3.5)</code>的问题时， 宏的做法会替换成4.5+3.5 * 4.5+3.5，显然与设计初衷不符，而内联函数则可以正常实现。</p>
+<hr>
+<h2 id="引用变量"><a href="#引用变量" class="headerlink" title="引用变量"></a>引用变量</h2><p>引用是c++新增的复合类型，它是以定义的变量的别名。<br>一个重要的用途是用作函数的形参，<strong>将引用变量作为参数，函数将使用原始数据而不是创建副本</strong>，提供了除了指针以外的，函数处理原始数据的方式。</p>
+<ol>
+<li>创建引用变量<br><code>int a; int &amp; b=a;</code>这两句操作允许将 a 和 b 互换，他们指向了相同的值和内存单元。<br>&amp;不是地址操作符， int &amp; 是b的类型。<br><strong>引用创建时必须进行初始化，不能先声明再赋值</strong>。</li>
+<li>引用用作函数参数</li>
+</ol>
+<ol start="3">
+<li>*引用的特别之处<br>如果实参与引用参数不匹配，且当参数为const引用时，，c++将生成临时变量。<br>两种创建临时变量的情况<br>·实参的类型正确，但不是左值。<br>·实参的类型不正确，但可以转换为正确的类型<br>左值参数，是可以被引用的数据对象，如变量，数组元素，结构成员，引用和解除引用的指针都是左值。而字面常量，包含多项的表达式，是非左值。</li>
+</ol>
+<p>当发生这两种情况时，c++会创建类型正确的匿名变量，再将函数实参的值赋给匿名变量，并让参数引用该变量。</p>
+<hr>
+<h3 id="将引用参数声明为-const-数据的引用的理由："><a href="#将引用参数声明为-const-数据的引用的理由：" class="headerlink" title="将引用参数声明为 const 数据的引用的理由："></a>将引用参数声明为 const 数据的引用的理由：</h3><ol>
+<li>使用 const 能够避免无意中修改数据的错误。</li>
+<li>使用 const 使函数能处理 const 和非 const 实参。</li>
+<li>使用 const 引用时函数能够正确生成并使用临时变量。</li>
+</ol>
+<hr>
+<ol start="4">
+<li>函数返回引用<br>原因：<br>在一个例子中<br><code>a = fun(b);</code><br>一般的，函数的返回值可以看作一个临时变量。当返回值为引用时，直接将引用中的内容赋值给等号左边,效率更高。<br>需要注意 ，应该避免返回函数终止时不存在的内存单元的引用，如<pre><code>const int &amp; aa(int &amp; n)
+{
+    int b;
+    b=n;
+    return b;
+}
+``` 这时，函数运行完毕后，临时变量b将不再存在，而返回的引用仍然指向这块地址。
+解决方法：1.返回一个作为参数传递给函数的引用。2.使用new来分配新的存储空间。
+
+
+</code></pre></li>
+</ol>
+<p>常规返回类型是右值–不能通过地址访问的值。因为它往往表示一个临时的内存单元。<br>当使用非const的引用时，函数返回类型不是右值，可以对它进行赋值操作。如果想要返回右值的效果，可以返回const引用。</p>
+<hr>
+<h2 id="默认参数"><a href="#默认参数" class="headerlink" title="默认参数"></a>默认参数</h2><p>通过函数原型可以设置参数的默认值，函数定义与平常相同，应注意，带参数列表的函数，必须从右到左添加默认值。</p>
+<hr>
+<h2 id="函数重载"><a href="#函数重载" class="headerlink" title="函数重载"></a>函数重载</h2><p> 若有多个可以转化为匹配参数的函数，选择最匹配的进行调用。</p>
+<hr>
+<h2 id="函数模板"><a href="#函数模板" class="headerlink" title="函数模板"></a>函数模板</h2><p>与类模板一同详述。</p>
+<hr>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/06/22/cpp%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0-1/" data-id="ckbqk57nb0000osv153z020ii" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-cpp学习日记" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/06/22/cpp%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0/" class="article-date">
@@ -127,7 +205,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/06/22/cpp%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0/" data-id="ckbqb200b0000v4v13nv51pjr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/06/22/cpp%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0/" data-id="ckbqk57ni0001osv10uymedm2" class="article-share-link">Share</a>
       
       
     </footer>
@@ -151,7 +229,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/06/21/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">我的第一篇博客</a>
+      <a class="article-title" href="/2020/06/21/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">我的第一篇博客--利用hexo+git</a>
     </h1>
   
 
@@ -191,7 +269,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/06/21/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/" data-id="ckbqb200f0001v4v1b0cu42xh" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/06/21/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/" data-id="ckbqk57nj0002osv107uo2x5l" class="article-share-link">Share</a>
       
       
     </footer>
@@ -232,11 +310,15 @@
       <ul>
         
           <li>
+            <a href="/2020/06/22/cpp%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0-1/">cpp学习日记</a>
+          </li>
+        
+          <li>
             <a href="/2020/06/22/cpp%E5%AD%A6%E4%B9%A0%E6%97%A5%E8%AE%B0/">cpp学习日记</a>
           </li>
         
           <li>
-            <a href="/2020/06/21/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">我的第一篇博客</a>
+            <a href="/2020/06/21/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/">我的第一篇博客--利用hexo+git</a>
           </li>
         
       </ul>
